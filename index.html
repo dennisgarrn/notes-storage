@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Notes</title>
+    <link rel="stylesheet" href="bulma.min.css">
+    <script src="main.js" defer></script>
+</head>
+<body>
+<section class="section">
+    <div class="container">
+        <div class="columns">
+            <div class="column">
+                <h1 class="title">
+                    Add Note
+                </h1>
+                <form id="notes_form">
+                    <div class="field">
+                        <label for="notes_title" class="label">Title</label>
+                        <input type="text" class="input" id="notes_title" placeholder="Notes Title" required>
+                    </div>
+                    <div class="field">
+                        <label for="notes_textarea" class="label"></label>
+                        <div class="control">
+                            <textarea class="textarea" name="Notes Message" id="notes_textarea" cols="30" rows="10" placeholder="Notes Message" required></textarea>
+                        </div>
+                    </div>
+                    <button class="button is-primary" id="notes_submit">Add Note</button>
+                </form>
+            </div>
+            <div class="column">
+                <div class="columns">
+                    <div class="column">
+                        <h1 class="title">
+                            Add Note
+                        </h1>
+                    </div>
+                    <div class="column">
+                        <button class="button is-pulled-right is-danger" id="notes_reset">Reset List</button>
+                    </div>
+                </div>
+                <table class="table is-striped is-fullwidth">
+                    <thead>
+                      <tr>
+                        <th>Title</th>
+                        <th>Message</th>
+                      </tr>
+                    </thead>
+                    <tbody id="notes_list">
+                        <tr>
+                            <td>No Notes</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</section>
+</body>
+</html>

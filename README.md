@@ -1,2 +1,3 @@
 # notes-storage
-Add Notes to localStorage
+Small Notes Project, Add Notes to localStorage and display
+
