@@ -1,15 +1,62 @@
 const STORAGE_KEY = 'notesArray';
 
 /**
+ * Persists notes in localStorage. Tolerates corrupt data and storage errors.
+ */
+class NoteStorage {
+    /**
+     * @param {string} key
+     */
+    constructor(key) {
+        this._key = key;
+    }
+
+    /**
+     * @returns {object[]}
+     */
+    load() {
+        try {
+            const notes = JSON.parse(localStorage.getItem(this._key));
+
+            return Array.isArray(notes) ? notes : [];
+        } catch (error) {
+            return [];
+        }
+    }
+
+    /**
+     * @param {object[]} notes
+     * @returns {boolean} whether the write succeeded
+     */
+    save(notes) {
+        try {
+            localStorage.setItem(this._key, JSON.stringify(notes));
+
+            return true;
+        } catch (error) {
+            console.error('Could not save notes', error);
+
+            return false;
+        }
+    }
+
+    clear() {
+        localStorage.removeItem(this._key);
+    }
+}
+
+/**
  * Notes Class
  */
 class Notes {
-    constructor() {
+    /**
+     * @param {NoteStorage} storage
+     */
+    constructor(storage) {
+        this._storage = storage;
         this._form = document.getElementById('notes_form');
         this._noteTitle = document.getElementById('notes_title');
         this._noteMessage = document.getElementById('notes_textarea');
-        this._submit = document.getElementById('notes_submit');
-        this._notes = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
         this._notesList = document.getElementById('notes_list');
         this._reset = document.getElementById('notes_reset');
 
@@ -17,7 +64,7 @@ class Notes {
     }
 
     _init() {
-        this._updateList();
+        this._render(this._storage.load());
 
         this._form.addEventListener('submit', (event) => {
             event.preventDefault();
@@ -28,65 +75,63 @@ class Notes {
             };
 
             event.target.reset();
-            this._addToList(note);
-        })
+            this._add(note);
+        });
 
         this._reset.addEventListener('click', (event) => {
             event.preventDefault();
 
-            localStorage.removeItem(STORAGE_KEY);
-            this._notes = [];
-
-            this._resetNotesList();
-        })
+            this._storage.clear();
+            this._render([]);
+        });
     }
 
     /**
-     *
+     * Re-reads storage first so other tabs' notes are not overwritten.
      * @param {object} note
      * @private
      */
-    _addToList(note) {
-        this._addNoteToLocalStorage(note);
-        this._updateList();
+    _add(note) {
+        const notes = this._storage.load();
+        notes.push(note);
+
+        this._storage.save(notes);
+        this._render(notes);
     }
 
     /**
-     * Add Note to LocalStorage
-     * @param {object} note
+     * Renders notes into the DOM list using text nodes (no HTML injection).
+     * @param {object[]} notes
      * @private
      */
-    _addNoteToLocalStorage(note) {
-        this._notes.push(note);
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(this._notes));
-    }
+    _render(notes) {
+        if (!notes.length) {
+            this._notesList.replaceChildren(this._createRow(['No Notes']));
 
-    /**
-     * Updates DOM Notes List
-     * @private
-     */
-    _updateList() {
-        if (this._notes.length) {
-            this._resetNotesList();
-
-            this._notesList.innerHTML = this._notes.map(note => {
-                return `
-                    <tr>
-                        <td>${note.title}</td>
-                        <td>${note.message}</td>
-                    </tr>
-                `;
-            }).join('');
+            return;
         }
+
+        this._notesList.replaceChildren(
+            ...notes.map(note => this._createRow([note.title, note.message]))
+        );
     }
 
     /**
-     * Reset DOM Notes List
+     * @param {string[]} cells
+     * @returns {HTMLTableRowElement}
      * @private
      */
-    _resetNotesList() {
-        this._notesList.innerHTML = '';
+    _createRow(cells) {
+        const row = document.createElement('tr');
+
+        cells.forEach(text => {
+            const cell = document.createElement('td');
+            cell.textContent = text;
+            row.appendChild(cell);
+        });
+
+        return row;
     }
 }
 
-new Notes();
+new Notes(new NoteStorage(STORAGE_KEY));
